@@ -1,46 +1,109 @@
 'use strict';
+/*
+Примерный файл подключения AzbNode
+*/
+var cfg = {
+	path : {
+		azbnode : './azbnode',
+		apps : './apps',
+	},
+	app : {
+		dir : 'default',
+	},
+};
 
-var
-	request = require('request'),
-	cheerio = require('cheerio')
+var argv = require('optimist').argv;
+
+var azbn = require(cfg.path.azbnode + '/azbnode');
+
+azbn.load('azbnodeevents', new require(cfg.path.azbnode + '/azbnodeevents')(azbn));
+azbn.load('webclient', new require(cfg.path.azbnode + '/azbnodewebclient')(azbn));
+azbn.load('codestream.find_links', new require(cfg.path.azbnode + '/azbnodecodestream')(azbn));
+
+azbn.event('loaded_azbnode', azbn);
+
+azbn.load('fs', require('fs'));
+//azbn.load('querystring', require('querystring'));
+azbn.load('path', require('path'));
+azbn.load('url', require('url'));
+
+//парсинг параметров командной строки
+//azbn.parseArgv();
+//azbn.event('parsed_argv', azbn);
+
+cfg.app.dir = cfg.path.apps + '/' + (argv.app || cfg.app.dir);
+
+
+azbn.load('app.router', new require(cfg.app.dir + '/router')(azbn));
+
+
+azbn.event('loaded_mdls', azbn);
+
+/* --------- Код здесь --------- */
+
+azbn.mdl('app.router').parseAdr('http://vorle.ru/');
+
+/*
+azbn.mdl('codestream.find_links')
+	.add(function(next){
+		
+		var root_adr = 'http://www.infoorel.ru/';
+		var root_url = azbn.mdl('url').parse(root_adr);
+		
+		azbn.mdl('webclient').r('GET', 'http://www.infoorel.ru/', {}, function(err, response, html){
+			
+			if(err){
+				azbn.echo(err);
+			}
+			
+			var $ = azbn.mdl('webclient').parse(html);
+			
+			$('a').each(function(index){
+				
+				var href = $(this).attr('href') || '';
+				
+				href = '' + href;
+				
+				href = href.toLowerCase();
+				//console.log(href);
+				
+				var url = azbn.mdl('url').parse(href);
+				
+				if(href.length == 0) {
+					
+				} else if(href.indexOf('http://') > -1 || href.indexOf('https://') > -1) {
+					
+					if((url.hostname == root_url.hostname) || (('www.' + url.hostname) == root_url.hostname) || (url.hostname == ('www.' + root_url.hostname))) {
+						
+						azbn.echo(url.path);
+						
+						//azbn.echo(url.pathname);
+						
+					}
+					
+				} else if(href[0] == '/') {
+					
+					//azbn.echo(href);
+					
+				} else if(href[0] == '#') {
+					
+					//azbn.echo(href);
+					
+				} else {
+					
+					
+					
+				}
+				
+			});
+			
+		});
+		
+		next();
+	}, 5000)
 ;
+*/
 
-var url = 'http://www.infoorel.ru/';
+/* --------- /Код здесь --------- */
 
-request(url, function(err, res, body) {
-	
-	if(err){
-		console.log(err);
-	}
-	
-	var $ = cheerio.load(body);
-	
-	$('a').each(function(index){
-		var href = $(this).attr('href') || '';
-		
-		href = '' + href;
-		
-		href = href.toLowerCase();
-		//console.log(href);
-		
-		if(href.length == 0) {
-			
-		} else if(href.indexOf('http://') > -1 || href.indexOf('https://') > -1) {
-			
-			console.log(href);
-			
-		} else if(href[0] == '/') {
-			
-			//console.log(href);
-			
-		} else if(href[0] == '#') {
-			
-			//console.log(href);
-			
-		} else {
-			
-		}
-		
-	});
-	
-})
+//azbn.event('eval_script', azbn);
