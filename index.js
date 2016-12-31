@@ -41,7 +41,9 @@ azbn.event('loaded_mdls', azbn);
 
 /* --------- Код здесь --------- */
 
-azbn.mdl('app.router').parseAdr('http://vorle.ru/');
+azbn.mdl('fs').writeFileSync('./tmp/links.txt', '');
+
+azbn.mdl('app.router').parseAdr('http://www.infoorel.ru/');
 
 /*
 azbn.mdl('codestream.find_links')

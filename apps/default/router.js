@@ -10,6 +10,7 @@ function _(azbn) {
 	ctrl.addToQueue = function(link) {
 		
 		azbn.mdl('fs').appendFileSync('./tmp/links.txt', link + "\n");
+		//.writeFileSync
 		
 	};
 	
