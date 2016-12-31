@@ -36,14 +36,25 @@ cfg.app.dir = cfg.path.apps + '/' + (argv.app || cfg.app.dir);
 
 azbn.load('app.router', new require(cfg.app.dir + '/router')(azbn));
 
+var sqlite3 = require('sqlite3').verbose();
+azbn.load('sqlite', new sqlite3.Database(cfg.app.dir + '/main.sqlite3', function(err){
+	
+	azbn.mdl('sqlite').run("CREATE TABLE links (id INTEGER PRIMARY KEY AUTOINCREMENT, url TEXT)");
+	
+	azbn.mdl('fs').writeFileSync('./tmp/links.txt', '');
+	
+	azbn.mdl('app.router').parseAdr('http://www.infoorel.ru/');
+	
+	//azbn.mdl('sqlite').close();
+	
+}));
 
 azbn.event('loaded_mdls', azbn);
 
 /* --------- Код здесь --------- */
 
-azbn.mdl('fs').writeFileSync('./tmp/links.txt', '');
 
-azbn.mdl('app.router').parseAdr('http://www.infoorel.ru/');
+
 
 /*
 azbn.mdl('codestream.find_links')

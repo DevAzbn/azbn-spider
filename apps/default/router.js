@@ -10,6 +10,8 @@ function _(azbn) {
 	ctrl.addToQueue = function(link) {
 		
 		azbn.mdl('fs').appendFileSync('./tmp/links.txt', link + "\n");
+		
+		azbn.mdl('sqlite').run("INSERT INTO links VALUES(NULL, '" + link + "')");
 		//.writeFileSync
 		
 	};
