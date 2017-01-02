@@ -36,7 +36,13 @@ function _(azbn) {
 				}, function (_err, _doc) {
 					
 					if(_err) {
+						
 						azbn.echo(_err);
+						
+					} else {
+						
+						azbn.mdl('app.router').parseAdr(link);
+						
 					}
 					
 				});
