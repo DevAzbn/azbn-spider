@@ -9,10 +9,41 @@ function _(azbn) {
 	
 	ctrl.addToQueue = function(link) {
 		
-		azbn.mdl('fs').appendFileSync('./tmp/links.txt', link + "\n");
+		//azbn.mdl('fs').appendFileSync('./tmp/links.txt', link + "\n");
 		
-		azbn.mdl('sqlite').run("INSERT INTO links VALUES(NULL, '" + link + "')");
+		//azbn.mdl('sqlite').run("INSERT INTO links VALUES(NULL, '" + link + "')");
 		//.writeFileSync
+		
+		azbn.mdl('nedb.links').findOne({ url : link }, function (err, doc) {
+			
+			if(err) {
+				
+				azbn.echo(err);
+				
+			} else if(doc != null && typeof doc != 'undefined') {
+				
+				//azbn.echo(doc);
+				
+			} else {
+				
+				var m = azbn.now();
+				
+				azbn.mdl('nedb.links').insert({
+					created_at : m,
+					created_at_str : azbn.formattime(m),
+					loaded : 0,
+					url : link,
+				}, function (_err, _doc) {
+					
+					if(_err) {
+						azbn.echo(_err);
+					}
+					
+				});
+				
+			}
+			
+		});
 		
 	};
 	
@@ -20,6 +51,15 @@ function _(azbn) {
 		
 		azbn.mdl('codestream.find_links')
 			.add(function(next){
+				
+				azbn.mdl('nedb.links').update({ url : link }, { $set : { loaded : 1 } }, { multi: true }, function (err, numReplaced) {
+					
+					if(err) {
+						
+						azbn.echo(err);
+					}
+					
+				});
 				
 				var link_p = azbn.mdl('url').parse(link);
 				

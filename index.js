@@ -10,6 +10,9 @@ var cfg = {
 	app : {
 		dir : 'default',
 	},
+	param : {
+		url : 'http://www.infoorel.ru/',
+	},
 };
 
 var argv = require('optimist').argv;
@@ -32,28 +35,28 @@ azbn.load('url', require('url'));
 //azbn.event('parsed_argv', azbn);
 
 cfg.app.dir = cfg.path.apps + '/' + (argv.app || cfg.app.dir);
-
+cfg.param.url = argv.url || cfg.param.url;
 
 azbn.load('app.router', new require(cfg.app.dir + '/router')(azbn));
 
-var sqlite3 = require('sqlite3').verbose();
-azbn.load('sqlite', new sqlite3.Database(cfg.app.dir + '/main.sqlite3', function(err){
-	
-	azbn.mdl('sqlite').run("CREATE TABLE links (id INTEGER PRIMARY KEY AUTOINCREMENT, url TEXT)");
-	
-	azbn.mdl('fs').writeFileSync('./tmp/links.txt', '');
-	
-	azbn.mdl('app.router').parseAdr('http://www.infoorel.ru/');
-	
-	//azbn.mdl('sqlite').close();
-	
+var NeDB = require('nedb');
+azbn.load('nedb.links', new NeDB({
+	filename : cfg.app.dir + '/links.nedb.json',
+	autoload : true,
 }));
+azbn.mdl('nedb.links').loadDatabase();
+azbn.mdl('nedb.links').ensureIndex({
+	fieldName : 'url',
+	unique : true,
+});
 
 azbn.event('loaded_mdls', azbn);
 
 /* --------- Код здесь --------- */
 
+azbn.mdl('fs').writeFileSync('./tmp/links.txt', '');
 
+azbn.mdl('app.router').parseAdr(cfg.param.url);
 
 
 /*
