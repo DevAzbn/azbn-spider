@@ -32,6 +32,7 @@ function _(azbn) {
 					created_at : m,
 					created_at_str : azbn.formattime(m),
 					loaded : 0,
+					is404 : 0,
 					url : link,
 				}, function (_err, _doc) {
 					
@@ -39,9 +40,9 @@ function _(azbn) {
 						
 						azbn.echo(_err);
 						
-					} else {
+					} else if(!_doc.is404) {
 						
-						azbn.mdl('app.router').parseAdr(link);
+						azbn.mdl('app.router').parseAdr(link, _doc._id);
 						
 					}
 					
@@ -53,7 +54,97 @@ function _(azbn) {
 		
 	};
 	
-	ctrl.parseAdr = function(link) {
+	ctrl.analLink = function(href, link) {
+		
+		var href_p = azbn.mdl('url').parse(href);
+		
+		var link_p = azbn.mdl('url').parse(link);
+		
+		//azbn.mdl('codestream.anal_links')
+		//	.add(function(next){
+				
+				if(href.length == 0) {
+					
+					// пустая ссылка
+					
+					
+					
+				} else if(href_p.protocol == 'http:' || href_p.protocol == 'https:') { // } else if(href.indexOf('http://') > -1 || href.indexOf('https://') > -1) {
+					
+					// найдены абсолютные пути с указанием протокола
+					
+					if((href_p.hostname == link_p.hostname) || (('www.' + href_p.hostname) == link_p.hostname) || (href_p.hostname == ('www.' + link_p.hostname))) {
+						
+						//azbn.echo(href_p.pathname);
+						
+						azbn.mdl('app.router').addToQueue(href);
+						
+						//azbn.echo(url.path);
+						
+					}
+					
+				} else if(href[0] == '/' && href[1] != '/') {
+					
+					// найден абсолютный путь на сайте
+					
+					//azbn.echo(href);
+					
+					azbn.mdl('app.router').addToQueue(link_p.protocol + '//' + link_p.host + href);
+					
+				} else if(href[0] == '/' && href[1] == '/') {
+					
+					// найден абсолютный путь без протокола
+					
+					//azbn.echo(href);
+					
+					azbn.mdl('app.router').addToQueue(link_p.protocol + href);
+					
+				} else if(href[0] == '#') {
+					
+					// ссылка-якорь
+					
+					//azbn.echo(href);
+					
+					
+					
+				} else if(href_p.protocol == 'callto:' || href_p.protocol == 'mailto:' || href_p.protocol == 'skype:' || href_p.protocol == 'tel:' ) {
+					
+					// не http-протоколы
+					
+				} else {
+					
+					// найден путь к файлу в той же папке
+					
+					if(link_p.pathname[link_p.pathname.length - 1] == '/') {
+						
+						azbn.mdl('app.router').addToQueue(link_p.protocol + '//' + link_p.host + link_p.pathname + href);
+						
+					} else {
+						
+						var _dir = azbn.mdl('path').dirname(link_p.pathname);
+						
+						if(_dir.length > 1) {
+							
+						} else {
+							
+							_dir = '';
+							
+						}
+						
+						azbn.mdl('app.router').addToQueue(link_p.protocol + '//' + link_p.host + _dir + '/' + href);
+						
+					}
+					
+				}
+				
+		//		next();
+		//		
+		//	}, 64)
+		//;
+		
+	};
+	
+	ctrl.parseAdr = function(link, uid) {
 		
 		azbn.mdl('codestream.find_links')
 			.add(function(next){
@@ -63,6 +154,7 @@ function _(azbn) {
 					if(err) {
 						
 						azbn.echo(err);
+						
 					}
 					
 				});
@@ -82,100 +174,46 @@ function _(azbn) {
 						
 					}
 					
-					var $ = azbn.mdl('webclient').parse(html);
+					//azbn.echo(response.headers['content-type'].toLowerCase());
 					
-					$('a').each(function(index){
+					if(response.statusCode == 200 && response.headers['content-type'].toLowerCase().indexOf('text/html') > -1) {
 						
-						var href = $(this).attr('href') || '';
+						azbn.mdl('fs').writeFileSync(azbn.mdl('cfg').app.dir + '/loaded/' + uid + '.html', html);
 						
-						href = '' + href;
+						var $ = azbn.mdl('webclient').parse(html);
 						
-						href = href.toLowerCase();
-						//console.log(href);
+						$('a').each(function(index){
+							
+							var href = $(this).attr('href') || '';
+							
+							href = '' + href;
+							
+							href = href.toLowerCase();
+							//console.log(href);
+							
+							azbn.mdl('app.router').analLink(href, link);
+							
+						});
 						
-						var href_p = azbn.mdl('url').parse(href);
+					} else if(response.statusCode == 404) {
 						
-						if(href.length == 0) {
+						azbn.mdl('nedb.links').update({ url : link }, { $set : { is404 : 1 } }, { multi: true }, function (_err, numReplaced) {
 							
-							// пустая ссылка
-							
-							
-							
-						} else if(href_p.protocol == 'http:' || href_p.protocol == 'https:') { // } else if(href.indexOf('http://') > -1 || href.indexOf('https://') > -1) {
-							
-							// найдены абсолютные пути с указанием протокола
-							
-							if((href_p.hostname == link_p.hostname) || (('www.' + href_p.hostname) == link_p.hostname) || (href_p.hostname == ('www.' + link_p.hostname))) {
+							if(_err) {
 								
-								//azbn.echo(href_p.pathname);
-								
-								azbn.mdl('app.router').addToQueue(href);
-								
-								//azbn.echo(url.path);
+								azbn.echo(_err);
 								
 							}
 							
-						} else if(href[0] == '/' && href[1] != '/') {
-							
-							// найден абсолютный путь на сайте
-							
-							//azbn.echo(href);
-							
-							azbn.mdl('app.router').addToQueue(link_p.protocol + '//' + link_p.host + href);
-							
-						} else if(href[0] == '/' && href[1] == '/') {
-							
-							// найден абсолютный путь без протокола
-							
-							//azbn.echo(href);
-							
-							azbn.mdl('app.router').addToQueue(link_p.protocol + href);
-							
-						} else if(href[0] == '#') {
-							
-							// ссылка-якорь
-							
-							//azbn.echo(href);
-							
-							
-							
-						} else if(href_p.protocol == 'callto:' || href_p.protocol == 'mailto:' || href_p.protocol == 'skype:' || href_p.protocol == 'tel:' ) {
-							
-							// не http-протоколы
-							
-						} else {
-							
-							// найден путь к файлу в той же папке
-							
-							if(link_p.pathname[link_p.pathname.length - 1] == '/') {
-								
-								azbn.mdl('app.router').addToQueue(link_p.protocol + '//' + link_p.host + link_p.pathname + href);
-								
-							} else {
-								
-								var _dir = azbn.mdl('path').dirname(link_p.pathname);
-								
-								if(_dir.length > 1) {
-									
-								} else {
-									
-									_dir = '';
-									
-								}
-								
-								azbn.mdl('app.router').addToQueue(link_p.protocol + '//' + link_p.host + _dir + '/' + href);
-								
-							}
-							
-						}
+						});
 						
-					});
+					}
 					
 				});
 				
 				next();
 				
-			}, 3000)
+			}, 350)
 		;
 		
 	};
