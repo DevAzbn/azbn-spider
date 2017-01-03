@@ -43,12 +43,13 @@ azbn.load('app.router', new require(cfg.app.dir + '/router')(azbn));
 var NeDB = require('nedb');
 azbn.load('nedb.links', new NeDB({
 	filename : cfg.app.dir + '/links.nedb.json',
-	autoload : true,
+	//autoload : true,
 }));
 azbn.mdl('nedb.links').loadDatabase();
 azbn.mdl('nedb.links').ensureIndex({
 	fieldName : 'url',
 	unique : true,
+	//sparse : false,
 });
 
 azbn.load('cfg', cfg);
@@ -59,7 +60,9 @@ azbn.event('loaded_mdls', azbn);
 
 //azbn.mdl('fs').writeFileSync('./tmp/links.txt', '');
 
-azbn.mdl('app.router').parseAdr(cfg.param.url, 'index');
+azbn.mdl('nedb.links').remove({}, { multi: true }, function (err, numRemoved) {});
+
+azbn.mdl('app.router').parseRootAdr(cfg.param.url, 'index');
 
 
 /*

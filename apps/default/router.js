@@ -3,6 +3,8 @@
 function _(azbn) {
 	var log_name = 'app.router';
 	
+	var _period = 333;
+	
 	var ctrl = {
 		
 	};
@@ -40,11 +42,15 @@ function _(azbn) {
 						
 						azbn.echo(_err);
 						
-					} else if(!_doc.is404) {
+					}
+					
+					/*
+					else if(!_doc.is404) {
 						
 						azbn.mdl('app.router').parseAdr(link, _doc._id);
 						
 					}
+					*/
 					
 				});
 				
@@ -56,12 +62,12 @@ function _(azbn) {
 	
 	ctrl.analLink = function(href, link) {
 		
-		var href_p = azbn.mdl('url').parse(href);
-		
-		var link_p = azbn.mdl('url').parse(link);
-		
 		//azbn.mdl('codestream.anal_links')
 		//	.add(function(next){
+				
+				var href_p = azbn.mdl('url').parse(href);
+				
+				var link_p = azbn.mdl('url').parse(link);
 				
 				if(href.length == 0) {
 					
@@ -139,7 +145,7 @@ function _(azbn) {
 				
 		//		next();
 		//		
-		//	}, 64)
+		//	}, 32)
 		//;
 		
 	};
@@ -149,72 +155,134 @@ function _(azbn) {
 		azbn.mdl('codestream.find_links')
 			.add(function(next){
 				
-				azbn.mdl('nedb.links').update({ url : link }, { $set : { loaded : 1 } }, { multi: true }, function (err, numReplaced) {
+				//azbn.mdl('nedb.links').update({ url : link }, { $set : { loaded : 1 } }, { multi: true }, function (err, numReplaced) {
+				//	
+				//	if(err) {
+				//		
+				//		azbn.echo(err);
+				//		
+				//	}
 					
-					if(err) {
-						
-						azbn.echo(err);
-						
-					}
+					var link_p = azbn.mdl('url').parse(link);
 					
-				});
-				
-				var link_p = azbn.mdl('url').parse(link);
-				
-				//azbn.echo(JSON.stringify(link_p));
-				azbn.echo(link);
-				
-				azbn.mdl('webclient').r('GET', link, {}, function(err, response, html){
+					//azbn.echo(JSON.stringify(link_p));
 					
-					if(err){
+					azbn.mdl('webclient').r('GET', link, {}, function(err, response, html){
 						
-						azbn.echo(err);
-						
-						return;
-						
-					}
-					
-					//azbn.echo(response.headers['content-type'].toLowerCase());
-					
-					if(response.statusCode == 200 && response.headers['content-type'].toLowerCase().indexOf('text/html') > -1) {
-						
-						azbn.mdl('fs').writeFileSync(azbn.mdl('cfg').app.dir + '/loaded/' + uid + '.html', html);
-						
-						var $ = azbn.mdl('webclient').parse(html);
-						
-						$('a').each(function(index){
+						if(err){
 							
-							var href = $(this).attr('href') || '';
+							azbn.echo(err);
 							
-							href = '' + href;
+							return;
 							
-							href = href.toLowerCase();
-							//console.log(href);
-							
-							azbn.mdl('app.router').analLink(href, link);
-							
-						});
+						}
 						
-					} else if(response.statusCode == 404) {
+						//azbn.echo(response.headers['content-type'].toLowerCase());
 						
-						azbn.mdl('nedb.links').update({ url : link }, { $set : { is404 : 1 } }, { multi: true }, function (_err, numReplaced) {
+						if(response.statusCode == 200 && response.headers['content-type'].toLowerCase().indexOf('text/html') > -1) {
 							
-							if(_err) {
+							azbn.echo(link);
+							
+							azbn.mdl('fs').writeFileSync(azbn.mdl('cfg').app.dir + '/loaded/' + uid + '.html', html);
+							
+							var $ = azbn.mdl('webclient').parse(html);
+							
+							/*
+							$('a').each(function(index){
 								
-								azbn.echo(_err);
+								var href = $(this).attr('href') || '';
 								
-							}
+								href = '' + href;
+								
+								href = href.toLowerCase();
+								//console.log(href);
+								
+								azbn.mdl('app.router').analLink(href, link);
+								
+							});
+							*/
 							
-						});
+							var _a = [];
+							
+							$('a').each(function(index){
+								
+								var href = $(this).attr('href') || '';
+								
+								href = '' + href;
+								
+								href = href.toLowerCase();
+								
+								_a.push(href);
+								
+							});
+							
+							_a.reduce(function(prevValue, item, index, arr){
+								
+								azbn.mdl('app.router').analLink(item, link);
+								
+							}, null);
+							
+						} else if(response.statusCode == 404) {
+							
+							azbn.mdl('nedb.links').update({ url : link }, { $set : { is404 : 1 } }, { multi: true }, function (_err, numReplaced) {
+								
+								if(_err) {
+									
+									azbn.echo(_err);
+									
+								}
+								
+							});
+							
+						}
 						
-					}
+					});
 					
-				});
+				//});
 				
 				next();
 				
-			}, 350)
+			}, _period)
 		;
+		
+	};
+	
+	ctrl.parseRootAdr = function(link, uid) {
+		
+		azbn.mdl('app.router').parseAdr(link, uid);
+		
+		ctrl.parseInterval = setInterval(function(){
+			
+			ctrl.parseNextAdr();
+			
+		}, _period);
+		
+	}
+	
+	ctrl.parseNextAdr = function() {
+		
+		//azbn.mdl('fs').appendFileSync('./tmp/links.txt', link + "\n");
+		
+		//azbn.mdl('sqlite').run("INSERT INTO links VALUES(NULL, '" + link + "')");
+		//.writeFileSync
+		
+		azbn.mdl('nedb.links').findOne({ loaded : 0, is404 : 0, }, function (err, doc) {
+			
+			if(err) {
+				
+				azbn.echo(err);
+				
+			} else if(doc != null && typeof doc != 'undefined') {
+				
+				azbn.mdl('nedb.links').update({ url : doc.url }, { $set : { loaded : 1 } }, { multi: true }, function (err, numReplaced) {});
+				
+				azbn.echo('Waiting ... ' + doc.url);
+				
+				azbn.mdl('app.router').parseAdr(doc.url, doc._id);
+				
+			}
+			
+		});
 		
 	};
 	
