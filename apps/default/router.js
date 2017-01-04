@@ -34,127 +34,117 @@ function _(azbn) {
 		
 	};
 	
+	
+	
 	ctrl.addToQueue = function(link, uid) {
 		
-		//azbn.mdl('codestream.queue_links')
-		//	.add(function(next){
-				
-				if(azbn.is_def(data.links.loaded[link])) {
-					
-				} else if(azbn.is_def(data.links.queue_status[link])) {
-					
-				} else {
-					
-					var m = azbn.now();
-					
-					var p = {
-						_id : uid || (Math.random().toString(36).split('.'))[1],
-						created_at : m,
-						url : link,
-					};
-					
-					data.links.queue.push(p);
-					
-					data.links.queue_status[link] = true;
-					
-				}
-				
-		//		next();
-		//		
-		//	}, parseInt(azbn.mdl('cfg').app.interval / 30))
-		//;
+		if(azbn.is_def(data.links.loaded[link])) {
+			
+		} else if(azbn.is_def(data.links.queue_status[link])) {
+			
+		} else {
+			
+			var m = azbn.now();
+			
+			var p = {
+				_id : uid || (Math.random().toString(36).split('.'))[1],
+				created_at : m,
+				url : link,
+			};
+			
+			data.links.queue.push(p);
+			
+			data.links.queue_status[link] = true;
+			
+		}
 		
 	};
 	
+	
+	
 	ctrl.analLink = function(href, link) {
 		
-		//azbn.mdl('codestream.anal_links')
-		//	.add(function(next){
+		var href_p = azbn.mdl('url').parse(href);
+		
+		var link_p = azbn.mdl('url').parse(link);
+		
+		if(href.length == 0) {
+			
+			// пустая ссылка
+			
+			
+			
+		} else if(href_p.protocol == 'http:' || href_p.protocol == 'https:') { // } else if(href.indexOf('http://') > -1 || href.indexOf('https://') > -1) {
+			
+			// найдены абсолютные пути с указанием протокола
+			
+			if((href_p.hostname == link_p.hostname) || (('www.' + href_p.hostname) == link_p.hostname) || (href_p.hostname == ('www.' + link_p.hostname))) {
 				
-				var href_p = azbn.mdl('url').parse(href);
+				//azbn.echo(href_p.pathname, log_name);
 				
-				var link_p = azbn.mdl('url').parse(link);
+				azbn.mdl('app.router').addToQueue(href);
 				
-				if(href.length == 0) {
-					
-					// пустая ссылка
-					
-					
-					
-				} else if(href_p.protocol == 'http:' || href_p.protocol == 'https:') { // } else if(href.indexOf('http://') > -1 || href.indexOf('https://') > -1) {
-					
-					// найдены абсолютные пути с указанием протокола
-					
-					if((href_p.hostname == link_p.hostname) || (('www.' + href_p.hostname) == link_p.hostname) || (href_p.hostname == ('www.' + link_p.hostname))) {
-						
-						//azbn.echo(href_p.pathname, log_name);
-						
-						azbn.mdl('app.router').addToQueue(href);
-						
-						//azbn.echo(url.path, log_name);
-						
-					}
-					
-				} else if(href[0] == '/' && href[1] != '/') {
-					
-					// найден абсолютный путь на сайте
-					
-					//azbn.echo(href, log_name);
-					
-					azbn.mdl('app.router').addToQueue(link_p.protocol + '//' + link_p.host + href);
-					
-				} else if(href[0] == '/' && href[1] == '/') {
-					
-					// найден абсолютный путь без протокола
-					
-					//azbn.echo(href, log_name);
-					
-					azbn.mdl('app.router').addToQueue(link_p.protocol + href);
-					
-				} else if(href[0] == '#') {
-					
-					// ссылка-якорь
-					
-					//azbn.echo(href, log_name);
-					
-					
-					
-				} else if(href_p.protocol == 'callto:' || href_p.protocol == 'mailto:' || href_p.protocol == 'skype:' || href_p.protocol == 'tel:' ) {
-					
-					// не http-протоколы
+				//azbn.echo(url.path, log_name);
+				
+			}
+			
+		} else if(href[0] == '/' && href[1] != '/') {
+			
+			// найден абсолютный путь на сайте
+			
+			//azbn.echo(href, log_name);
+			
+			azbn.mdl('app.router').addToQueue(link_p.protocol + '//' + link_p.host + href);
+			
+		} else if(href[0] == '/' && href[1] == '/') {
+			
+			// найден абсолютный путь без протокола
+			
+			//azbn.echo(href, log_name);
+			
+			azbn.mdl('app.router').addToQueue(link_p.protocol + href);
+			
+		} else if(href[0] == '#') {
+			
+			// ссылка-якорь
+			
+			//azbn.echo(href, log_name);
+			
+			
+			
+		} else if(href_p.protocol == 'callto:' || href_p.protocol == 'mailto:' || href_p.protocol == 'skype:' || href_p.protocol == 'tel:' ) {
+			
+			// не http-протоколы
+			
+		} else {
+			
+			// найден путь к файлу в той же папке
+			
+			if(link_p.pathname[link_p.pathname.length - 1] == '/') {
+				
+				azbn.mdl('app.router').addToQueue(link_p.protocol + '//' + link_p.host + link_p.pathname + href);
+				
+			} else {
+				
+				var _dir = azbn.mdl('path').dirname(link_p.pathname);
+				
+				if(_dir.length > 1) {
 					
 				} else {
 					
-					// найден путь к файлу в той же папке
-					
-					if(link_p.pathname[link_p.pathname.length - 1] == '/') {
-						
-						azbn.mdl('app.router').addToQueue(link_p.protocol + '//' + link_p.host + link_p.pathname + href);
-						
-					} else {
-						
-						var _dir = azbn.mdl('path').dirname(link_p.pathname);
-						
-						if(_dir.length > 1) {
-							
-						} else {
-							
-							_dir = '';
-							
-						}
-						
-						azbn.mdl('app.router').addToQueue(link_p.protocol + '//' + link_p.host + _dir + '/' + href);
-						
-					}
+					_dir = '';
 					
 				}
 				
-		//		next();
-		//		
-		//	}, parseInt(azbn.mdl('cfg').app.interval / 10))
-		//;
+				azbn.mdl('app.router').addToQueue(link_p.protocol + '//' + link_p.host + _dir + '/' + href);
+				
+			}
+			
+		}
 		
 	};
+	
+	
 	
 	ctrl.parseAdr = function(link, uid) {
 		
@@ -224,6 +214,10 @@ function _(azbn) {
 											url : link,
 										};
 										
+										azbn.mdl('nedb.links').insert(data.links.loaded[link], function(_err, _doc){
+											
+										});
+										
 									} else {
 										
 										azbn.echo('Not HTML (' + counter + '): ' + link, log_name);
@@ -264,7 +258,7 @@ function _(azbn) {
 								
 							}
 							
-							azbn.mdl('fs').writeFileSync(azbn.mdl('cfg').app.dir + '/data.json', JSON.stringify(data));
+							//azbn.mdl('fs').writeFileSync(azbn.mdl('cfg').app.dir + '/data.json', JSON.stringify(data));
 							
 							azbn.mdl('app.router').parseNextAdr();
 							
@@ -281,6 +275,8 @@ function _(azbn) {
 		
 	};
 	
+	
+	
 	ctrl.parseRootAdr = function(link, _id) {
 		
 		azbn.mdl('app.router').addToQueue(link, _id);
@@ -288,6 +284,8 @@ function _(azbn) {
 		azbn.mdl('app.router').parseNextAdr();
 		
 	};
+	
+	
 	
 	ctrl.parseNextAdr = function() {
 		
@@ -301,13 +299,16 @@ function _(azbn) {
 			
 		} else {
 			
-			
+			azbn.mdl('fs').writeFileSync(azbn.mdl('cfg').app.dir + '/data.json', JSON.stringify(data));
 			
 		}
 		
 	};
 	
+	
+	
 	return ctrl;
+	
 };
 
 module.exports = _;

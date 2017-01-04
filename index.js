@@ -43,7 +43,7 @@ cfg.app.interval = parseInt(argv.interval) || cfg.app.interval;
 
 azbn.load('app.router', new require(cfg.app.dir + '/router')(azbn));
 
-/*
+
 var NeDB = require('nedb');
 azbn.load('nedb.links', new NeDB({
 	filename : cfg.app.dir + '/links.nedb.json',
@@ -55,7 +55,7 @@ azbn.mdl('nedb.links').ensureIndex({
 	unique : true,
 	//sparse : false,
 });
-*/
+
 
 azbn.load('cfg', cfg);
 
@@ -63,73 +63,9 @@ azbn.event('loaded_mdls', azbn);
 
 /* --------- Код здесь --------- */
 
-//azbn.mdl('fs').writeFileSync('./tmp/links.txt', '');
-
-//azbn.mdl('nedb.links').remove({}, { multi: true }, function (err, numRemoved) {});
+azbn.mdl('nedb.links').remove({}, { multi: true }, function (err, numRemoved) {});
 
 azbn.mdl('app.router').parseRootAdr(cfg.param.url, 'index');
-
-
-/*
-azbn.mdl('codestream.find_links')
-	.add(function(next){
-		
-		var root_adr = 'http://www.infoorel.ru/';
-		var root_url = azbn.mdl('url').parse(root_adr);
-		
-		azbn.mdl('webclient').r('GET', 'http://www.infoorel.ru/', {}, function(err, response, html){
-			
-			if(err){
-				azbn.echo(err);
-			}
-			
-			var $ = azbn.mdl('webclient').parse(html);
-			
-			$('a').each(function(index){
-				
-				var href = $(this).attr('href') || '';
-				
-				href = '' + href;
-				
-				href = href.toLowerCase();
-				//console.log(href);
-				
-				var url = azbn.mdl('url').parse(href);
-				
-				if(href.length == 0) {
-					
-				} else if(href.indexOf('http://') > -1 || href.indexOf('https://') > -1) {
-					
-					if((url.hostname == root_url.hostname) || (('www.' + url.hostname) == root_url.hostname) || (url.hostname == ('www.' + root_url.hostname))) {
-						
-						azbn.echo(url.path);
-						
-						//azbn.echo(url.pathname);
-						
-					}
-					
-				} else if(href[0] == '/') {
-					
-					//azbn.echo(href);
-					
-				} else if(href[0] == '#') {
-					
-					//azbn.echo(href);
-					
-				} else {
-					
-					
-					
-				}
-				
-			});
-			
-		});
-		
-		next();
-	}, 5000)
-;
-*/
 
 /* --------- /Код здесь --------- */
 
