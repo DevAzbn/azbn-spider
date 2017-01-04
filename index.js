@@ -9,6 +9,7 @@ var cfg = {
 	},
 	app : {
 		dir : 'default',
+		interval : 400,
 	},
 	param : {
 		url : 'http://www.infoorel.ru/',
@@ -21,8 +22,9 @@ var azbn = require(cfg.path.azbnode + '/azbnode');
 
 azbn.load('azbnodeevents', new require(cfg.path.azbnode + '/azbnodeevents')(azbn));
 azbn.load('webclient', new require(cfg.path.azbnode + '/azbnodewebclient')(azbn));
+
 azbn.load('codestream.find_links', new require(cfg.path.azbnode + '/azbnodecodestream')(azbn));
-azbn.load('codestream.queue_links', new require(cfg.path.azbnode + '/azbnodecodestream')(azbn));
+//azbn.load('codestream.queue_links', new require(cfg.path.azbnode + '/azbnodecodestream')(azbn));
 
 azbn.event('loaded_azbnode', azbn);
 
@@ -37,9 +39,11 @@ azbn.load('url', require('url'));
 
 cfg.app.dir = cfg.path.apps + '/' + (argv.app || cfg.app.dir);
 cfg.param.url = argv.url || cfg.param.url;
+cfg.app.interval = parseInt(argv.interval) || cfg.app.interval;
 
 azbn.load('app.router', new require(cfg.app.dir + '/router')(azbn));
 
+/*
 var NeDB = require('nedb');
 azbn.load('nedb.links', new NeDB({
 	filename : cfg.app.dir + '/links.nedb.json',
@@ -51,6 +55,7 @@ azbn.mdl('nedb.links').ensureIndex({
 	unique : true,
 	//sparse : false,
 });
+*/
 
 azbn.load('cfg', cfg);
 
@@ -60,7 +65,7 @@ azbn.event('loaded_mdls', azbn);
 
 //azbn.mdl('fs').writeFileSync('./tmp/links.txt', '');
 
-azbn.mdl('nedb.links').remove({}, { multi: true }, function (err, numRemoved) {});
+//azbn.mdl('nedb.links').remove({}, { multi: true }, function (err, numRemoved) {});
 
 azbn.mdl('app.router').parseRootAdr(cfg.param.url, 'index');
 

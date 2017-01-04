@@ -4,7 +4,7 @@
 var util = require('util'),
 	EventEmitter = require('events').EventEmitter;
 
-var CS = function(_azbn){
+var CS = function(){
 	this.o = this;
 };
 
