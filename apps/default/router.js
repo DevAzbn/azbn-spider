@@ -23,6 +23,11 @@ var data = {
 			302 : [],
 		},
 	},
+	structure : {
+		'/' : {
+			
+		}
+	},
 };
 
 function _(azbn) {
@@ -189,7 +194,22 @@ function _(azbn) {
 											href = href.toLowerCase();
 											
 											//_a.push(href);
-											__a[href]++;
+											
+											if(azbn.mdl('cfg').app.url_mask == false) {
+												
+												__a[href]++;
+												
+											} else {
+												
+												if(href.search(azbn.mdl('cfg').app.url_mask) > -1) {
+													
+													__a[href]++;
+													
+												} else {
+													
+												}
+												
+											}
 											
 										});
 										
@@ -298,6 +318,48 @@ function _(azbn) {
 			azbn.mdl('app.router').parseAdr(doc.url, doc._id);
 			
 		} else {
+			
+			for(var i in data.links.loaded) {
+				
+				var link_p = azbn.mdl('url').parse(data.links.loaded[i].url);
+				
+				var path = link_p.pathname;
+				var path_arr = path.split('/');
+				
+				var __path = data.structure['/'];
+				
+				for(var j = 1; j < path_arr.length; j++) {
+					
+					var __item = path_arr[j];
+					
+					if(__item == '') {
+						
+						//__path = data.links.loaded[i];
+						__path._id = data.links.loaded[i]._id;
+						
+					} else {
+						
+						if(__path[__item]) {
+							
+						} else {
+							
+							__path[__item] = {};
+							
+						}
+						
+						if(j == (path_arr.length - 1)) {
+							
+							__path[__item] = data.links.loaded[i]._id;
+							
+						}
+						
+					}
+					
+					__path = __path[__item];
+					
+				}
+				
+			}
 			
 			azbn.mdl('fs').writeFileSync(azbn.mdl('cfg').app.dir + '/data.json', JSON.stringify(data));
 			
