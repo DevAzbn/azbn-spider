@@ -22,7 +22,7 @@ var azbn = require(cfg.path.azbnode + '/azbnode');
 azbn.load('azbnodeevents', new require(cfg.path.azbnode + '/azbnodeevents')(azbn));
 azbn.load('webclient', new require(cfg.path.azbnode + '/azbnodewebclient')(azbn));
 azbn.load('codestream.find_links', new require(cfg.path.azbnode + '/azbnodecodestream')(azbn));
-azbn.load('codestream.anal_links', new require(cfg.path.azbnode + '/azbnodecodestream')(azbn));
+azbn.load('codestream.queue_links', new require(cfg.path.azbnode + '/azbnodecodestream')(azbn));
 
 azbn.event('loaded_azbnode', azbn);
 

@@ -16,47 +16,59 @@ function _(azbn) {
 		//azbn.mdl('sqlite').run("INSERT INTO links VALUES(NULL, '" + link + "')");
 		//.writeFileSync
 		
-		azbn.mdl('nedb.links').findOne({ url : link }, function (err, doc) {
-			
-			if(err) {
+		//azbn.mdl('codestream.queue_links')
+		//	.add(function(next){
 				
-				azbn.echo(err);
-				
-			} else if(doc != null && typeof doc != 'undefined') {
-				
-				//azbn.echo(doc);
-				
-			} else {
-				
-				var m = azbn.now();
-				
-				azbn.mdl('nedb.links').insert({
-					created_at : m,
-					created_at_str : azbn.formattime(m),
-					loaded : 0,
-					is404 : 0,
-					url : link,
-				}, function (_err, _doc) {
+				azbn.mdl('nedb.links').count({ url : link }, function (err, count) {
 					
-					if(_err) {
+					if(err) {
 						
-						azbn.echo(_err);
+						azbn.echo(err);
+						
+						//next();
+						
+					} else if(count > 0) {
+						
+						//azbn.echo(doc);
+						
+						//next();
+						
+					} else {
+						
+						var m = azbn.now();
+						
+						azbn.mdl('nedb.links').insert({
+							created_at : m,
+							created_at_str : azbn.formattime(m),
+							loaded : 0,
+							is404 : 0,
+							url : link,
+						}, function (_err, _doc) {
+							
+							if(_err) {
+								
+								azbn.echo(_err);
+								
+							} else if (_doc._id) {
+								
+								//azbn.mdl('app.router').parseAdr(link, _doc._id);
+								
+								//next();
+								
+								azbn.echo('[Inserted: ' + _doc.url + ']');
+								
+							}
+							
+						});
 						
 					}
-					
-					/*
-					else if(!_doc.is404) {
-						
-						azbn.mdl('app.router').parseAdr(link, _doc._id);
-						
-					}
-					*/
 					
 				});
 				
-			}
-			
-		});
+		//		next();
+		//		
+		//	}, parseInt(_period / 30))
+		//;
 		
 	};
 	
@@ -145,7 +157,7 @@ function _(azbn) {
 				
 		//		next();
 		//		
-		//	}, 32)
+		//	}, parseInt(_period / 10))
 		//;
 		
 	};
@@ -203,6 +215,7 @@ function _(azbn) {
 							*/
 							
 							var _a = [];
+							var __a = {};
 							
 							$('a').each(function(index){
 								
@@ -212,9 +225,16 @@ function _(azbn) {
 								
 								href = href.toLowerCase();
 								
-								_a.push(href);
+								//_a.push(href);
+								__a[href]++;
 								
 							});
+							
+							for(var i in __a) {
+								_a.push(i);
+							}
+							
+							azbn.echo('[On page ' + link + ' finded ' + _a.length + ' links]');
 							
 							_a.reduce(function(prevValue, item, index, arr){
 								
@@ -276,9 +296,17 @@ function _(azbn) {
 				
 				azbn.mdl('nedb.links').update({ url : doc.url }, { $set : { loaded : 1 } }, { multi: true }, function (err, numReplaced) {});
 				
-				azbn.echo('Waiting ... ' + doc.url);
+				//azbn.echo('Waiting ... ' + doc.url);
 				
-				azbn.mdl('app.router').parseAdr(doc.url, doc._id);
+				//azbn.mdl('codestream.find_links')
+				//	.add(function(next){
+						
+						azbn.mdl('app.router').parseAdr(doc.url, doc._id);
+						
+				//		next();
+				//		
+				//	}, _period)
+				//;
 				
 			}
 			

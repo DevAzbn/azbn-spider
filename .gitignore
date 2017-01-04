@@ -1,2 +1,4 @@
 node_modules/*
 tmp/*
+apps/default/loaded/*
+apps/default/links.nedb.json
