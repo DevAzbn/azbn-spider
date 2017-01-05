@@ -92,6 +92,10 @@ function _(azbn) {
 				//azbn.echo(url.path, log_name);
 				
 			}
+		
+		} else if(href.indexOf('javascript:') == 0) {
+			
+			
 			
 		} else if(href[0] == '/' && href[1] != '/') {
 			
@@ -339,6 +343,8 @@ function _(azbn) {
 						
 					} else {
 						
+						//azbn.echo(JSON.stringify(__path));
+						
 						if(__path[__item]) {
 							
 						} else {
@@ -349,7 +355,7 @@ function _(azbn) {
 						
 						if(j == (path_arr.length - 1)) {
 							
-							__path[__item] = data.links.loaded[i]._id;
+							__path[__item]._id = data.links.loaded[i]._id;
 							
 						}
 						
