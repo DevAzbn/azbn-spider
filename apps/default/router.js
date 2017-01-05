@@ -34,6 +34,7 @@ function _(azbn) {
 	var log_name = 'app.router';
 	
 	var counter = 0;
+	var counter_url_max = 0;
 	
 	var ctrl = {
 		
@@ -284,6 +285,8 @@ function _(azbn) {
 							
 							//azbn.mdl('fs').writeFileSync(azbn.mdl('cfg').app.dir + '/data.json', JSON.stringify(data));
 							
+							counter_url_max++;
+							
 							azbn.mdl('app.router').parseNextAdr();
 							
 						}
@@ -313,7 +316,7 @@ function _(azbn) {
 	
 	ctrl.parseNextAdr = function() {
 		
-		if(data.links.queue.length > 0) {
+		if((data.links.queue.length > 0) && (counter_url_max < azbn.mdl('cfg').app.url_max)) {
 			
 			var doc = data.links.queue.shift();
 			

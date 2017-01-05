@@ -11,9 +11,10 @@ var cfg = {
 		dir : 'default',
 		interval : 400,
 		url_mask : false,
+		url_max : 10240,
 	},
 	param : {
-		url : 'http://www.infoorel.ru/',
+		url : 'http://azbn.ru/',
 	},
 };
 
@@ -42,6 +43,7 @@ cfg.app.dir = cfg.path.apps + '/' + (argv.app || cfg.app.dir);
 cfg.param.url = argv.url || cfg.param.url;
 cfg.app.interval = parseInt(argv.interval) || cfg.app.interval;
 cfg.app.url_mask = argv.url_mask ? new RegExp('(' + argv.url_mask + ')', 'ig') : false;
+cfg.app.url_max = argv.url_max ? parseInt(argv.url_max) : cfg.app.url_max;
 
 azbn.load('app.router', new require(cfg.app.dir + '/router')(azbn));
 
