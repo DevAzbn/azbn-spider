@@ -24,7 +24,7 @@ var argv = require('optimist').argv;
 var azbn = require(cfg.path.azbnode + '/azbnode');
 
 // включение режима разработки
-azbn.isDev(argv.dev || 1);
+//azbn.isDev();
 
 azbn.load('azbnodeevents', new require(cfg.path.azbnode + '/azbnodeevents')(azbn));
 azbn.load('webclient', new require(cfg.path.azbnode + '/azbnodewebclient')(azbn));
