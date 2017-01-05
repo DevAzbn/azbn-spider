@@ -3,11 +3,22 @@ module.exports = {
 	__argv : {},
 	__mdl : {},
 	__event : {},
+	__is_dev : false,
 	
 	name : 'AzbNode',
 	
+	isDev : function(dev) {
+		this.__is_dev = dev || true;
+	},
+	
 	echo : function(text, tag) {
 		console.log(this.formattime() + ': ' + (tag||this.name) + ': ' + text);
+	},
+	
+	echo_dev : function(text, tag) {
+		if(this.__is_dev) {
+			this.echo(text, tag);
+		}
 	},
 	
 	len :function(arr) {

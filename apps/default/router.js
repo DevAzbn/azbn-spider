@@ -23,11 +23,7 @@ var data = {
 			302 : [],
 		},
 	},
-	structure : {
-		'/' : {
-			
-		}
-	},
+	structure : {},
 };
 
 function _(azbn) {
@@ -62,6 +58,8 @@ function _(azbn) {
 			
 			data.links.queue_status[link] = true;
 			
+			azbn.echo_dev('Add to queue: ' + link, log_name);
+			
 		}
 		
 	};
@@ -94,10 +92,6 @@ function _(azbn) {
 				
 			}
 		
-		} else if(href.indexOf('javascript:') == 0) {
-			
-			
-			
 		} else if(href[0] == '/' && href[1] != '/') {
 			
 			// найден абсолютный путь на сайте
@@ -122,7 +116,7 @@ function _(azbn) {
 			
 			
 			
-		} else if(href_p.protocol == 'callto:' || href_p.protocol == 'mailto:' || href_p.protocol == 'skype:' || href_p.protocol == 'tel:' ) {
+		} else if(href_p.protocol == 'callto:' || href_p.protocol == 'mailto:' || href_p.protocol == 'skype:' || href_p.protocol == 'tel:' || href_p.protocol == 'javascript:') {
 			
 			// не http-протоколы
 			
@@ -222,7 +216,7 @@ function _(azbn) {
 											_a.push(i);
 										}
 										
-										//azbn.echo('[On page ' + link + ' finded ' + _a.length + ' links]', log_name);
+										azbn.echo_dev('[On page ' + link + ' finded ' + _a.length + ' links]', log_name);
 										
 										_a.reduce(function(prevValue, item, index, arr){
 											
@@ -326,6 +320,8 @@ function _(azbn) {
 			
 		} else {
 			
+			azbn.echo_dev('Finish link-queue', log_name);
+			
 			for(var i in data.links.loaded) {
 				
 				var link_p = azbn.mdl('url').parse(data.links.loaded[i].url);
@@ -333,7 +329,19 @@ function _(azbn) {
 				var path = link_p.pathname;
 				var path_arr = path.split('/');
 				
-				var __path = data.structure['/'];
+				var __path
+				
+				if(data.structure[link_p.host]) {
+					
+				} else {
+					
+					data.structure[link_p.host] = {
+						'/' : {},
+					};
+					
+				}
+				
+				__path = data.structure[link_p.host]['/'];
 				
 				for(var j = 1; j < path_arr.length; j++) {
 					
@@ -371,6 +379,8 @@ function _(azbn) {
 			}
 			
 			azbn.mdl('fs').writeFileSync(azbn.mdl('cfg').app.dir + '/data.json', JSON.stringify(data));
+			
+			azbn.echo_dev('Saved result to file', log_name);
 			
 		}
 		
