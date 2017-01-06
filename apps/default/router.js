@@ -155,7 +155,7 @@ function _(azbn) {
 		azbn.mdl('codestream.find_links')
 			.add(function(next){
 					
-					var link_p = azbn.mdl('url').parse(link);
+					//var link_p = azbn.mdl('url').parse(link);
 					
 					azbn.mdl('webclient').r('GET', link, {}, function(err, response, html){
 						
