@@ -155,7 +155,7 @@ function _(azbn) {
 		azbn.mdl('codestream.find_links')
 			.add(function(next){
 					
-					//var link_p = azbn.mdl('url').parse(link);
+					var link_p = azbn.mdl('url').parse(link);
 					
 					azbn.mdl('webclient').r('GET', link, {}, function(err, response, html){
 						
@@ -177,52 +177,62 @@ function _(azbn) {
 										
 										azbn.echo('Loading (' + counter + '): ' + link, log_name);
 										
-										azbn.mdl('fs').writeFileSync(azbn.mdl('cfg').app.dir + '/loaded/' + uid + '.html', html);
+										var _dir = azbn.mdl('cfg').app.dir + '/loaded/' + link_p.hostname + '/';
 										
-										var $ = azbn.mdl('webclient').parse(html);
+										if (!azbn.mdl('fs').existsSync(_dir)){
+											azbn.mdl('fs').mkdirSync(_dir);
+										}
 										
-										var _a = [];
-										var __a = {};
+										azbn.mdl('fs').writeFileSync(_dir + uid + '.html', html);
 										
-										$('a').each(function(index){
+										if(!azbn.mdl('cfg').app.url_get_list || azbn.mdl('cfg').app.url_get_list == '') {
+										
+											var $ = azbn.mdl('webclient').parse(html);
 											
-											var href = $(this).attr('href') || '';
+											var _a = [];
+											var __a = {};
 											
-											href = '' + href;
-											
-											href = href.toLowerCase();
-											
-											//_a.push(href);
-											
-											if(azbn.mdl('cfg').app.url_mask == false) {
+											$('a').each(function(index){
 												
-												__a[href]++;
+												var href = $(this).attr('href') || '';
 												
-											} else {
+												href = '' + href;
 												
-												if(href.search(azbn.mdl('cfg').app.url_mask) > -1) {
+												href = href.toLowerCase();
+												
+												//_a.push(href);
+												
+												if(azbn.mdl('cfg').app.url_mask == false) {
 													
 													__a[href]++;
 													
 												} else {
 													
+													if(href.search(azbn.mdl('cfg').app.url_mask) > -1) {
+														
+														__a[href]++;
+														
+													} else {
+														
+													}
+													
 												}
 												
+											});
+											
+											for(var i in __a) {
+												_a.push(i);
 											}
 											
-										});
-										
-										for(var i in __a) {
-											_a.push(i);
+											azbn.echo_dev('[On page ' + link + ' finded ' + _a.length + ' links]', log_name);
+											
+											_a.reduce(function(prevValue, item, index, arr){
+												
+												azbn.mdl('app.router').analLink(item, link);
+												
+											}, null);
+											
 										}
-										
-										azbn.echo_dev('[On page ' + link + ' finded ' + _a.length + ' links]', log_name);
-										
-										_a.reduce(function(prevValue, item, index, arr){
-											
-											azbn.mdl('app.router').analLink(item, link);
-											
-										}, null);
 										
 										var m = azbn.now();
 										

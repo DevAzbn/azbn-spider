@@ -49,6 +49,8 @@ if(argv.url) {
 	
 	cfg.app.url = argv.url || cfg.app.url;
 	
+	cfg.app.url_get_list = false;
+	
 } else if(argv.url_get_list) {
 	
 	cfg.app.url_get_list = argv.url_get_list || cfg.app.url_get_list;
@@ -56,6 +58,8 @@ if(argv.url) {
 } else {
 	
 	cfg.app.url = argv.url || cfg.app.url;
+	
+	cfg.app.url_get_list = false;
 	
 }
 
