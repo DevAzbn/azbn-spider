@@ -12,7 +12,7 @@ util.inherits(CS, EventEmitter);
 
 function AzbNodeCodeStream(azbn) {
 	
-	var log_name = this.name;
+	var log_name = 'azbnodecodestream';
 	
 	//var ctrl = this;
 	
